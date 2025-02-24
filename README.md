@@ -32,7 +32,7 @@ Deze quiz is ontworpen om:
 
 1. Clone de repository:
 ```bash
-git clone https://github.com/[uw-username]/AI-Cybersecurity-Challenge.git
+git clone https://github.com/Daniel-DDV/AI-Cybersecurity-Challenge.git
 ```
 
 2. Open het project in een webserver (bijvoorbeeld NGINX)
