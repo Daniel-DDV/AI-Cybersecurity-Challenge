@@ -1,4 +1,5 @@
-const questions = [
+// Quiz vragen en antwoorden
+window.questions = [
     {
         question: "Je wilt snel een audio-opname van een vergadering laten transcriberen. Wat is de veiligste optie?",
         answers: [
