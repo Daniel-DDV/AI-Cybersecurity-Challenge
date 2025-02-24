@@ -44,14 +44,14 @@ class QuizUI {
         this.badgeImage = document.querySelector('.badge-image');
         this.badgeTitle = document.getElementById('badge-title');
 
-        // Audio elementen
-        this.sounds = {
-            start: new Audio('assets/audio/start.mp3'),
-            correct: new Audio('assets/audio/correct.mp3'),
-            wrong: new Audio('assets/audio/wrong.mp3'),
-            click: new Audio('assets/audio/click.mp3'),
-            end: new Audio('assets/audio/end.mp3')
-        };
+        // Audio setup
+        this.audioContext = null;
+        this.audioBuffers = {};
+        this.audioInitialized = false;
+        this.audioEnabled = true;
+
+        // Audio initialisatie voorbereiden
+        this.initAudio();
 
         // Share button
         this.shareButton = document.getElementById('share-btn');
@@ -66,6 +66,78 @@ class QuizUI {
                this.questionElement && this.answersContainer && this.feedbackElement &&
                this.startButton && this.restartButton && this.nextButton &&
                this.finalScoreElement && this.scoreMessageElement && this.badgeImage && this.badgeTitle;
+    }
+
+    async initAudio() {
+        try {
+            // Creëer AudioContext meteen (maar nog niet starten)
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Laad alle geluiden
+            const audioFiles = {
+                start: 'assets/audio/start.mp3',
+                correct: 'assets/audio/correct.mp3',
+                wrong: 'assets/audio/wrong.mp3',
+                click: 'assets/audio/click.mp3',
+                end: 'assets/audio/end.mp3'
+            };
+
+            // Laad alle audiobestanden parallel
+            const bufferPromises = Object.entries(audioFiles).map(async ([name, url]) => {
+                try {
+                    const response = await fetch(url);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    this.audioBuffers[name] = audioBuffer;
+                } catch (error) {
+                    console.warn(`Kon geluid ${name} niet laden:`, error);
+                }
+            });
+
+            await Promise.all(bufferPromises);
+            this.audioInitialized = true;
+
+            // Luister naar verschillende gebruikersinteracties om audio te activeren
+            const activateAudio = async () => {
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+            };
+
+            ['click', 'touchstart', 'touchend'].forEach(event => {
+                document.addEventListener(event, activateAudio, { once: false });
+            });
+
+        } catch (error) {
+            console.warn('Audio setup mislukt:', error);
+            this.audioEnabled = false;
+        }
+    }
+
+    async playSound(soundName) {
+        if (!this.audioEnabled || !this.audioInitialized || !this.audioBuffers[soundName]) {
+            return;
+        }
+
+        try {
+            // Zorg dat de context actief is
+            if (this.audioContext.state === 'suspended') {
+                await this.audioContext.resume();
+            }
+
+            // Creëer een nieuwe buffer source voor elke keer dat we het geluid afspelen
+            const source = this.audioContext.createBufferSource();
+            source.buffer = this.audioBuffers[soundName];
+            
+            // Verbind met de output
+            source.connect(this.audioContext.destination);
+            
+            // Start het geluid
+            source.start(0);
+
+        } catch (error) {
+            console.warn(`Geluid ${soundName} afspelen mislukt:`, error);
+        }
     }
 
     showScreen(screen) {
@@ -148,14 +220,6 @@ class QuizUI {
     }
 
     // Geluid afspelen
-    playSound(soundName) {
-        try {
-            this.sounds[soundName].currentTime = 0;
-            this.sounds[soundName].play();
-        } catch (error) {
-            console.warn('Geluid kon niet worden afgespeeld:', error);
-        }
-    }
 }
 
 // Quiz Controller
@@ -178,9 +242,9 @@ class QuizController {
     }
 
     setupEventListeners() {
-        // Start Quiz
+        // Start button
         this.ui.startButton.addEventListener('click', () => {
-            this.ui.playSound('start');
+            this.ui.playSound('start');  // Voeg start geluid toe
             this.startQuiz();
         });
 
@@ -209,7 +273,6 @@ class QuizController {
 
         // Restart Quiz
         this.ui.restartButton.addEventListener('click', () => {
-            this.ui.playSound('start');
             this.startQuiz();
         });
 
@@ -248,7 +311,7 @@ class QuizController {
     }
 
     startQuiz() {
-        this.state = new QuizState();
+        this.state.reset();
         this.ui.showScreen(this.ui.quizScreen);
         this.showQuestion();
     }
@@ -329,26 +392,109 @@ class QuizController {
         this.ui.startScreen.prepend(errorMessage);
     }
 
+    isIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent);
+    }
+
+    getLinkedInShareUrl(shareUrl, shareText) {
+        if (this.isIOS()) {
+            // iOS: Gebruik LinkedIn app URL schema
+            return `linkedin://shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
+        } else {
+            // Desktop & Android: Gebruik share-offsite URL
+            return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+        }
+    }
+
     async shareResults() {
         const score = this.state.score;
         const total = this.state.questions.length;
-        const shareText = `Ik heb ${score} van de ${total} vragen goed beantwoord in de AI & Cybersecurity Challenge! Doe jij het beter? 🎯`;
+        const percentage = Math.round((score / total) * 100);
         
-        try {
-            if (navigator.share) {
+        // Bepaal de badge en tekst
+        let badgeText;
+        if (percentage >= 80) {
+            badgeText = "AI & Cybersecurity Expert";
+        } else if (percentage >= 60) {
+            badgeText = "AI & Cybersecurity Professional";
+        } else {
+            badgeText = "AI & Security Student";
+        }
+
+        const shareUrl = 'https://apps.civiqs.ai/ai-cybersecurity-challenge';
+        const messageText = 
+            `🏆 Yes! Ik heb de AI & Cybersecurity Challenge voltooid als ${badgeText} met ${score}/${total} punten (${percentage}%)!\n\n` +
+            `Durf jij de uitdaging ook aan? Test je kennis over AI & Cybersecurity en verdien je eigen certificaat. 💪\n\n` +
+            `#AICybersecurity #DigitaleVeiligheid #ChallengeAccepted`;
+        
+        // Check of het een mobiel apparaat is
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (isMobile && navigator.share) {
+            try {
+                // Voor mobiel: gebruik native share functionaliteit
                 await navigator.share({
                     title: 'AI & Cybersecurity Challenge Score',
-                    text: shareText,
+                    text: messageText,
+                    url: shareUrl
                 });
-            } else {
-                await navigator.clipboard.writeText(shareText);
-                this.ui.shareButton.textContent = 'Gekopieerd!';
-                setTimeout(() => {
-                    this.ui.shareButton.innerHTML = '<i class="fas fa-share-alt"></i> Delen';
-                }, 2000);
+            } catch (error) {
+                console.warn('Native delen niet mogelijk:', error);
+                // Fallback: open LinkedIn share in nieuwe tab
+                const linkedInUrl = this.getLinkedInShareUrl(shareUrl, messageText);
+                
+                if (this.isIOS()) {
+                    // Voor iOS proberen we eerst de LinkedIn app te openen
+                    window.location.href = linkedInUrl;
+                    
+                    // Na een korte timeout, als de app niet opent, fallback naar de web versie
+                    setTimeout(() => {
+                        window.location.href = this.getLinkedInShareUrl(shareUrl, messageText);
+                    }, 500);
+                } else {
+                    // Voor andere platformen direct openen
+                    window.location.href = linkedInUrl;
+                }
             }
-        } catch (error) {
-            console.warn('Delen niet mogelijk:', error);
+        } else {
+            // Desktop: open LinkedIn share in popup
+            const linkedInUrl = this.getLinkedInShareUrl(shareUrl, messageText);
+            const width = 600;
+            const height = 600;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+            
+            window.open(
+                linkedInUrl,
+                'linkedin-share-dialog',
+                `width=${width},height=${height},left=${left},top=${top}`
+            );
+        }
+    }
+
+    openLinkedInShare(url, text) {
+        // LinkedIn parameters
+        const linkedInParams = new URLSearchParams({
+            text: text
+        }).toString();
+
+        const linkedInUrl = `https://www.linkedin.com/feed/post/new/?${linkedInParams}`;
+        
+        // Open in popup op desktop, nieuwe tab op mobiel
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+            window.location.href = linkedInUrl;
+        } else {
+            const width = 600;
+            const height = 600;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+            
+            window.open(
+                linkedInUrl,
+                'linkedin-share-dialog',
+                `width=${width},height=${height},left=${left},top=${top}`
+            );
         }
     }
 }
