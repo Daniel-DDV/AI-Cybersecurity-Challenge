@@ -76,9 +76,9 @@ Dit project is gelicentieerd onder de MIT License - zie het [LICENSE](LICENSE) b
 
 ## ✨ Credits
 
-- Ontwikkeld voor de Nederlandse overheid
-- Geluidseffecten: [credits voor geluidsbestanden]
-- Pixel-art badge: [credits voor artwork]
+- Ontwikkeld voor de Nederlandse overheid door Daniel Verloop van https://civiqs.nl
+- Geluidseffecten: Envato Elements Commercial License 
+- Pixel-art badge: Envato Elements Commercial License 
 
 ## 📞 Contact
 
