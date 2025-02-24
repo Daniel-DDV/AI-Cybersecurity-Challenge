@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI & Cybersecurity Challenge Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div id="start-screen" class="screen active">
+            <h1>AI & Cybersecurity Challenge</h1>
+            <p>Test uw kennis over AI en Cybersecurity!</p>
+            <button id="start-btn" class="btn">Start Quiz</button>
+        </div>
+
+        <div id="quiz-screen" class="screen">
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+                <div id="question-counter">Vraag 1/20</div>
+            </div>
+            <div id="question-container">
+                <h2 id="question">Vraag wordt geladen...</h2>
+                <div id="answer-buttons" class="btn-grid">
+                </div>
+            </div>
+            <div id="feedback-container" class="hidden">
+                <div id="feedback-content">
+                    <div id="feedback-icon"></div>
+                    <p id="feedback-text"></p>
+                </div>
+                <button id="next-btn" class="btn">Volgende Vraag</button>
+            </div>
+        </div>
+
+        <div id="end-screen" class="screen">
+            <h2>Quiz Voltooid!</h2>
+            <div id="score-container">
+                <p>Uw score: <span id="final-score">0</span>/20</p>
+            </div>
+            <div id="badge-container">
+                <img id="badge-image" src="assets/images/award.png" alt="Badge">
+                <p id="badge-title"></p>
+            </div>
+            <button id="share-btn" class="btn">Deel Resultaat</button>
+            <button id="restart-btn" class="btn">Opnieuw Proberen</button>
+        </div>
+    </div>
+
+    <audio id="audio-start" src="assets/audio/start.mp3"></audio>
+    <audio id="audio-correct" src="assets/audio/correct.mp3"></audio>
+    <audio id="audio-wrong" src="assets/audio/wrong.mp3"></audio>
+    <audio id="audio-click" src="assets/audio/click.mp3"></audio>
+    <audio id="audio-end" src="assets/audio/end.mp3"></audio>
+
+    <script src="js/questions.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

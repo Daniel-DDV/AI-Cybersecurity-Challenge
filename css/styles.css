@@ -1,0 +1,181 @@
+:root {
+    --primary-orange: #df6f00;
+    --primary-dark-blue: #134273;
+    --primary-blue: #007bc7;
+    --white: #ffffff;
+    --light-blue: #e5f1f9;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: var(--primary-dark-blue);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    max-width: 800px;
+    width: 100%;
+}
+
+h1, h2, .btn {
+    font-family: 'Press Start 2P', cursive;
+    color: var(--primary-dark-blue);
+    text-align: center;
+    line-height: 1.5;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    background-color: var(--primary-orange);
+    color: var(--white);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: transform 0.1s, background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #c66200;
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-grid {
+    display: grid;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.progress-container {
+    width: 100%;
+    height: 30px;
+    background-color: var(--light-blue);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+#progress-bar {
+    height: 100%;
+    background-color: var(--primary-blue);
+    width: 5%;
+    transition: width 0.5s ease-in-out;
+}
+
+#question-counter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    color: var(--primary-dark-blue);
+}
+
+#feedback-container {
+    background-color: var(--light-blue);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+#feedback-container.hidden {
+    display: none;
+}
+
+#feedback-content {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#feedback-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 15px;
+}
+
+.feedback-correct #feedback-icon {
+    background-color: #4CAF50;
+    border-radius: 50%;
+}
+
+.feedback-wrong #feedback-icon {
+    background-color: #f44336;
+    border-radius: 50%;
+}
+
+#badge-container {
+    text-align: center;
+    margin: 30px 0;
+}
+
+#badge-image {
+    max-width: 150px;
+    margin-bottom: 15px;
+}
+
+#badge-title {
+    font-family: 'Press Start 2P', cursive;
+    color: var(--primary-orange);
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    h2 {
+        font-size: 16px;
+    }
+
+    .btn {
+        padding: 12px;
+        font-size: 12px;
+    }
+}
