@@ -161,26 +161,45 @@ function showEndScreen() {
         scoreMessage.textContent = "Je hebt helaas niet de vereiste 70% gehaald. Probeer het nog een keer!";
     }
     
-    // Show both retry and share buttons
+    // Always show both buttons
     restartButton.style.display = 'block';
-    if (percentage >= 70) {
-        shareButton.style.display = 'block';
-    } else {
-        shareButton.style.display = 'none';
-    }
+    shareButton.style.display = 'block';
 }
 
 // Share results
 function shareOnLinkedIn() {
     const percentage = (score / questions.length) * 100;
     const formattedPercentage = percentage.toFixed(1);
+    const baseUrl = 'https://apps.civiqs.ai/ai-cybersecurity-challenge';
     
-    const shareText = encodeURIComponent(
-        `Ik heb de AI & Cybersecurity Challenge succesvol afgerond met een score van ${formattedPercentage}%! 🏆\n\nTest jouw kennis over AI & Cybersecurity ook en verdien je certificaat! #AICybersecurity #DigitaleVeiligheid #Certificaat`
-    );
+    // Construct the text with proper line breaks
+    let messageText;
+    if (percentage >= 70) {
+        messageText = 
+            `🏆 Yes! Ik heb de AI & Cybersecurity Challenge gehaald met ${formattedPercentage}%!` +
+            `${String.fromCharCode(10)}${String.fromCharCode(10)}` +
+            `Durf jij de uitdaging ook aan? Test je kennis over AI & Cybersecurity en verdien je eigen certificaat. 💪` +
+            `${String.fromCharCode(10)}${String.fromCharCode(10)}` +
+            `#AICybersecurity #DigitaleVeiligheid #ChallengeAccepted`;
+    } else {
+        messageText = 
+            `🎯 Ik heb net ${formattedPercentage}% gescoord op de AI & Cybersecurity Challenge!` +
+            `${String.fromCharCode(10)}${String.fromCharCode(10)}` +
+            `Denk jij dat je het beter kunt? Probeer het zelf en test je kennis! 💪` +
+            `${String.fromCharCode(10)}${String.fromCharCode(10)}` +
+            `#AICybersecurity #DigitaleVeiligheid #ChallengeAccepted`;
+    }
+
+    // Add the URL at the end of the message
+    messageText += `${String.fromCharCode(10)}${String.fromCharCode(10)}${baseUrl}`;
     
-    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://apps.civiqs.ai/ai-cybersecurity-challenge')}&title=${shareText}`;
-    window.open(shareUrl, '_blank');
+    // Construct the sharing URL with properly encoded parameters
+    const shareUrl = 'https://www.linkedin.com/feed/?' + new URLSearchParams({
+        shareActive: true,
+        text: messageText
+    }).toString();
+    
+    window.open(shareUrl, 'LinkedInShare', 'width=600,height=600');
 }
 
 // Restart quiz
