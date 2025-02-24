@@ -107,10 +107,10 @@ function showFeedback(correct, selectedButton) {
     nextBtn.classList.add('btn', 'pixel-font');
     
     if (currentQuestionIndex === questions.length - 1) {
-        nextBtn.innerHTML = 'Finish Quiz';
+        nextBtn.innerHTML = 'Quiz Afronden';
         nextBtn.onclick = showEndScreen;
     } else {
-        nextBtn.innerHTML = 'Next Question';
+        nextBtn.innerHTML = 'Volgende Vraag';
         nextBtn.onclick = () => {
             audioClick.play();
             currentQuestionIndex++;
@@ -151,7 +151,7 @@ function showEndScreen() {
     if (percentage >= 70) {
         badgeContainer.innerHTML = `
             <div class="badge">
-                <img src="images/badge.png" alt="Achievement Badge" class="badge-image">
+                <img src="assets/images/award.png" alt="Achievement Badge" class="badge-image">
                 <h3>Gefeliciteerd!</h3>
                 <p>Je hebt de AI & Cybersecurity Challenge succesvol afgerond!</p>
             </div>
@@ -172,10 +172,14 @@ function showEndScreen() {
 
 // Share results
 function shareOnLinkedIn() {
+    const percentage = (score / questions.length) * 100;
+    const formattedPercentage = percentage.toFixed(1);
+    
     const shareText = encodeURIComponent(
-        "Ik heb zojuist de AI & Cybersecurity Challenge succesvol afgerond! #AICybersecurity #DigitaleVeiligheid #Certificaat"
+        `Ik heb de AI & Cybersecurity Challenge succesvol afgerond met een score van ${formattedPercentage}%! 🏆\n\nTest jouw kennis over AI & Cybersecurity ook en verdien je certificaat! #AICybersecurity #DigitaleVeiligheid #Certificaat`
     );
-    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}&title=${shareText}`;
+    
+    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://apps.civiqs.ai/ai-cybersecurity-challenge')}&title=${shareText}`;
     window.open(shareUrl, '_blank');
 }
 
