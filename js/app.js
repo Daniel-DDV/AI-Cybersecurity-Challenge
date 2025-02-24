@@ -5,13 +5,14 @@ const endScreen = document.getElementById('end-screen');
 const startButton = document.getElementById('start-btn');
 const questionElement = document.getElementById('question');
 const answerButtonsElement = document.getElementById('answer-buttons');
-const nextButton = document.getElementById('next-btn');
 const progressBar = document.getElementById('progress-bar');
 const questionCounter = document.getElementById('question-counter');
 const feedbackContainer = document.getElementById('feedback-container');
 const feedbackContent = document.getElementById('feedback-content');
 const feedbackText = document.getElementById('feedback-text');
 const finalScoreElement = document.getElementById('final-score');
+const scoreMessage = document.querySelector('.score-message');
+const badgeContainer = document.getElementById('badge-container');
 const badgeTitle = document.getElementById('badge-title');
 const shareButton = document.getElementById('share-btn');
 const restartButton = document.getElementById('restart-btn');
@@ -25,37 +26,36 @@ const audioEnd = document.getElementById('audio-end');
 
 let currentQuestionIndex = 0;
 let score = 0;
-let shuffledQuestions = [];
+let hasAnsweredCorrectly = false;
 
 // Initialize quiz
 function startQuiz() {
     audioStart.play();
     startScreen.classList.remove('active');
     quizScreen.classList.add('active');
-    shuffledQuestions = [...questions].sort(() => Math.random() - 0.5);
     currentQuestionIndex = 0;
     score = 0;
-    showQuestion();
+    setNextQuestion();
 }
 
 // Display current question
-function showQuestion() {
+function setNextQuestion() {
     resetState();
-    const currentQuestion = shuffledQuestions[currentQuestionIndex];
-    const questionNo = currentQuestionIndex + 1;
-    questionCounter.innerText = `Vraag ${questionNo}/20`;
-    progressBar.style.width = `${(questionNo / 20) * 100}%`;
-    
-    questionElement.innerText = currentQuestion.question;
-    
-    currentQuestion.answers.forEach(answer => {
+    showQuestion(questions[currentQuestionIndex]);
+    updateProgress();
+}
+
+function showQuestion(question) {
+    questionElement.innerText = question.question;
+    question.answers.forEach(answer => {
         const button = document.createElement('button');
         button.innerText = answer.text;
-        button.classList.add('btn');
+        button.classList.add('btn', 'pixel-font');
         button.dataset.correct = answer.correct;
         button.addEventListener('click', selectAnswer);
         answerButtonsElement.appendChild(button);
     });
+    hasAnsweredCorrectly = false;
 }
 
 // Reset question state
@@ -68,41 +68,70 @@ function resetState() {
 
 // Handle answer selection
 function selectAnswer(e) {
+    if (hasAnsweredCorrectly) return;
+    
     const selectedButton = e.target;
     const correct = selectedButton.dataset.correct === 'true';
     
     if (correct) {
-        score++;
         audioCorrect.play();
-        feedbackContainer.className = 'feedback-correct';
+        selectedButton.classList.add('correct');
+        score++;
+        hasAnsweredCorrectly = true;
     } else {
         audioWrong.play();
-        feedbackContainer.className = 'feedback-wrong';
+        selectedButton.classList.add('wrong');
     }
     
-    feedbackText.innerText = shuffledQuestions[currentQuestionIndex].explanation;
+    showFeedback(correct, selectedButton);
+}
+
+function showFeedback(correct, selectedButton) {
     feedbackContainer.classList.remove('hidden');
+    feedbackContent.className = correct ? 'feedback-correct' : 'feedback-wrong';
+    
+    const currentQuestion = questions[currentQuestionIndex];
+    const selectedAnswer = currentQuestion.answers.find(answer => answer.text === selectedButton.innerText);
+    
+    feedbackText.innerHTML = `${correct ? '✅ Correct!' : '❌ Incorrect!'}\n\n${selectedAnswer.explanation}`;
     
     Array.from(answerButtonsElement.children).forEach(button => {
         button.disabled = true;
         if (button.dataset.correct === 'true') {
-            button.style.backgroundColor = '#4CAF50';
+            button.classList.add('correct');
         }
     });
     
-    // Remove any existing event listeners from the next button
-    nextButton.replaceWith(nextButton.cloneNode(true));
-    // Get the fresh reference to the button
-    const freshNextButton = document.getElementById('next-btn');
+    const nextBtn = document.createElement('button');
+    nextBtn.id = 'next-btn';
+    nextBtn.classList.add('btn', 'pixel-font');
     
-    if (currentQuestionIndex < questions.length - 1) {
-        freshNextButton.addEventListener('click', () => {
-            currentQuestionIndex++;
-            showQuestion();
-        }, { once: true });
+    if (currentQuestionIndex === questions.length - 1) {
+        nextBtn.innerHTML = 'Finish Quiz';
+        nextBtn.onclick = showEndScreen;
     } else {
-        freshNextButton.addEventListener('click', showEndScreen, { once: true });
+        nextBtn.innerHTML = 'Next Question';
+        nextBtn.onclick = () => {
+            audioClick.play();
+            currentQuestionIndex++;
+            setNextQuestion();
+        };
     }
+    
+    // Remove any existing next button
+    const existingNextBtn = document.getElementById('next-btn');
+    if (existingNextBtn) {
+        existingNextBtn.remove();
+    }
+    
+    // Add the new next button
+    feedbackContainer.appendChild(nextBtn);
+}
+
+function updateProgress() {
+    const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+    progressBar.style.width = progress + '%';
+    questionCounter.innerText = `Vraag ${currentQuestionIndex + 1}/${questions.length}`;
 }
 
 // Display end screen
@@ -110,46 +139,57 @@ function showEndScreen() {
     audioEnd.play();
     quizScreen.classList.remove('active');
     endScreen.classList.add('active');
-    finalScoreElement.textContent = score;
     
-    // Determine badge based on score
-    let badgeText = '';
-    if (score >= 18) {
-        badgeText = 'AI & Cybersecurity Expert! 🏆';
-    } else if (score >= 15) {
-        badgeText = 'Digital Security Pro! 🌟';
-    } else if (score >= 12) {
-        badgeText = 'Security Enthusiast! 📚';
+    const percentage = (score / questions.length) * 100;
+    const formattedPercentage = percentage.toFixed(1);
+    
+    finalScoreElement.textContent = `${score} van de ${questions.length} vragen correct (${formattedPercentage}%)`;
+    
+    // Clear previous badge if exists
+    badgeContainer.innerHTML = '';
+    
+    if (percentage >= 70) {
+        badgeContainer.innerHTML = `
+            <div class="badge">
+                <img src="images/badge.png" alt="Achievement Badge" class="badge-image">
+                <h3>Gefeliciteerd!</h3>
+                <p>Je hebt de AI & Cybersecurity Challenge succesvol afgerond!</p>
+            </div>
+        `;
+        scoreMessage.textContent = "Uitstekend werk! Je hebt bewezen dat je de basisprincipes van AI & Cybersecurity goed begrijpt.";
     } else {
-        badgeText = 'Security Beginner! 🌱';
+        scoreMessage.textContent = "Je hebt helaas niet de vereiste 70% gehaald. Probeer het nog een keer!";
     }
-    badgeTitle.textContent = badgeText;
+    
+    // Show both retry and share buttons
+    restartButton.style.display = 'block';
+    if (percentage >= 70) {
+        shareButton.style.display = 'block';
+    } else {
+        shareButton.style.display = 'none';
+    }
 }
 
 // Share results
-function shareResults() {
-    const text = `Ik heb ${score} van de 20 vragen goed beantwoord in de AI & Cybersecurity Challenge! #AICyberChallenge`;
-    if (navigator.share) {
-        navigator.share({
-            title: 'AI & Cybersecurity Challenge Resultaat',
-            text: text
-        });
-    } else {
-        // Fallback for browsers that don't support Web Share API
-        const dummy = document.createElement('textarea');
-        document.body.appendChild(dummy);
-        dummy.value = text;
-        dummy.select();
-        document.execCommand('copy');
-        document.body.removeChild(dummy);
-        alert('Resultaat gekopieerd naar klembord!');
-    }
+function shareOnLinkedIn() {
+    const shareText = encodeURIComponent(
+        "Ik heb zojuist de AI & Cybersecurity Challenge succesvol afgerond! #AICybersecurity #DigitaleVeiligheid #Certificaat"
+    );
+    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}&title=${shareText}`;
+    window.open(shareUrl, '_blank');
+}
+
+// Restart quiz
+function restartQuiz() {
+    audioClick.play();
+    endScreen.classList.remove('active');
+    startScreen.classList.add('active');
+    currentQuestionIndex = 0;
+    score = 0;
+    hasAnsweredCorrectly = false;
 }
 
 // Event listeners
 startButton.addEventListener('click', startQuiz);
-shareButton.addEventListener('click', shareResults);
-restartButton.addEventListener('click', () => {
-    endScreen.classList.remove('active');
-    startScreen.classList.add('active');
-});
+shareButton.addEventListener('click', shareOnLinkedIn);
+restartButton.addEventListener('click', restartQuiz);

@@ -4,47 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI & Cybersecurity Challenge Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container">
         <div id="start-screen" class="screen active">
             <h1>AI & Cybersecurity Challenge</h1>
-            <p>Test uw kennis over AI en Cybersecurity!</p>
-            <button id="start-btn" class="btn">Start Quiz</button>
+            <p class="welcome-text">Welkom bij de interactieve quiz over AI en Cybersecurity! 🚀<br><br>
+            Ben jij klaar om je kennis te testen en bij te dragen aan een veiligere digitale overheid?</p>
+            <button id="start-btn" class="btn pixel-font">Start de Challenge!</button>
         </div>
 
         <div id="quiz-screen" class="screen">
             <div class="progress-container">
                 <div id="progress-bar"></div>
-                <div id="question-counter">Vraag 1/20</div>
+                <div id="question-counter" class="pixel-font">Vraag 1/20</div>
             </div>
             <div id="question-container">
-                <h2 id="question">Vraag wordt geladen...</h2>
+                <h2 id="question" class="modern-font">Vraag wordt geladen...</h2>
                 <div id="answer-buttons" class="btn-grid">
                 </div>
             </div>
             <div id="feedback-container" class="hidden">
                 <div id="feedback-content">
                     <div id="feedback-icon"></div>
-                    <p id="feedback-text"></p>
+                    <p id="feedback-text" class="modern-font"></p>
                 </div>
-                <button id="next-btn" class="btn">Volgende Vraag</button>
+                <button id="next-btn" class="btn pixel-font">Volgende Vraag</button>
             </div>
         </div>
 
         <div id="end-screen" class="screen">
-            <h2>Quiz Voltooid!</h2>
+            <h2 class="pixel-font">Quiz Voltooid! 🎉</h2>
             <div id="score-container">
-                <p>Uw score: <span id="final-score">0</span>/20</p>
+                <p class="modern-font">Uw score: <span id="final-score">0</span>/20</p>
+                <p class="score-message modern-font"></p>
             </div>
             <div id="badge-container">
                 <img id="badge-image" src="assets/images/award.png" alt="Badge">
-                <p id="badge-title"></p>
+                <p id="badge-title" class="pixel-font"></p>
             </div>
-            <button id="share-btn" class="btn">Deel Resultaat</button>
-            <button id="restart-btn" class="btn">Opnieuw Proberen</button>
+            <button id="share-btn" class="btn pixel-font">Deel op LinkedIn</button>
+            <button id="restart-btn" class="btn pixel-font">Probeer Opnieuw</button>
         </div>
     </div>
 
